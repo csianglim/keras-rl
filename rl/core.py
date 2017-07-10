@@ -110,6 +110,8 @@ class Agent(object):
         observation = None
         episode_reward = None
         episode_step = None
+        episode_action = None
+        episode_observation = None
         did_abort = False
         try:
             while self.step < nb_steps:
@@ -184,6 +186,8 @@ class Agent(object):
                     done = True
                 metrics = self.backward(reward, terminal=done)
                 episode_reward += reward
+                episode_observation += observation
+                episode_action += action
 
                 step_logs = {
                     'action': action,
@@ -211,6 +215,8 @@ class Agent(object):
                         'episode_reward': np.float_(episode_reward),
                         'nb_episode_steps': np.float_(episode_step),
                         'nb_steps': np.float_(self.step),
+                        'mean_action': np.float(episode_action),
+                        'mean_observation': np.float(episode_observation),
                     }
                     callbacks.on_episode_end(episode, episode_logs)
 
