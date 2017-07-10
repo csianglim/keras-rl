@@ -119,6 +119,8 @@ class Agent(object):
                     callbacks.on_episode_begin(episode)
                     episode_step = 0
                     episode_reward = 0.
+                    episode_action = 0.
+                    episode_observation = 0.
 
                     # Obtain the initial observation by resetting the environment.
                     self.reset_states()
@@ -153,6 +155,8 @@ class Agent(object):
                 # At this point, we expect to be fully initialized.
                 assert episode_reward is not None
                 assert episode_step is not None
+                assert episode_action is not None
+                assert episode_observation is not None                
                 assert observation is not None
 
                 # Run a single step.
