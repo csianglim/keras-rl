@@ -219,8 +219,8 @@ class Agent(object):
                         'episode_reward': np.float_(episode_reward),
                         'nb_episode_steps': np.float_(episode_step),
                         'nb_steps': np.float_(self.step),
-                        'mean_action': np.float(np.mean(episode_action)),
-                        'mean_observation': np.float(np.mean(episode_observation)),
+                        'mean_action': np.float_(np.mean(episode_action)),
+                        'mean_observation': np.float_(np.mean(episode_observation)),
                     }
                     callbacks.on_episode_end(episode, episode_logs)
 
