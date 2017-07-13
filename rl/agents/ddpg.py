@@ -171,7 +171,7 @@ class DDPGAgent(Agent):
                         tf.logical_and(is_under_lower_bound, is_gradient_positive)
                     )
 
-                    return K.switch(invert_gradient, -g, g)
+                    inverted_grads.append(K.switch(invert_gradient, -g, g))
                 modified_grads = inverted_grads[:]
                     
             if clipnorm > 0.:
