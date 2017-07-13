@@ -180,7 +180,7 @@ class DDPGAgent(Agent):
                     print(prange)
                     print(p)
 
-                    g = K.switch(is_gradient_positive, K.dot(g,pdiff_max), K.dot(g, pdiff_min))
+                    g = K.switch(is_gradient_positive, g*pdiff_max, g*pdiff_min)
                     inverted_grads.extend(g)
                 modified_grads = inverted_grads[:]
                     
