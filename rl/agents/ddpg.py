@@ -174,6 +174,11 @@ class DDPGAgent(Agent):
                     #    K.all(is_above_upper_bound, is_gradient_negative),
                     #    K.all(is_under_lower_bound, is_gradient_positive)
                     #)
+                    
+                    print(g)
+                    print(pdiff_max)
+                    print(prange)
+                    print(p)
 
                     g = K.switch(is_gradient_positive, K.dot(g,pdiff_max), K.dot(g, pdiff_min))
                     inverted_grads.extend(g)
