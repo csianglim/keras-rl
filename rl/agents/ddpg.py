@@ -175,7 +175,7 @@ class DDPGAgent(Agent):
                     #    K.all(is_under_lower_bound, is_gradient_positive)
                     #)
 
-                    g = K.switch(is_gradient_positive, K.dot(g,pdiff_max), K.dot(g, pdiff_min)
+                    g = K.switch(is_gradient_positive, K.dot(g,pdiff_max), K.dot(g, pdiff_min))
                     inverted_grads.extend(g)
                 modified_grads = inverted_grads[:]
                     
