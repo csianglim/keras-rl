@@ -158,33 +158,20 @@ class DDPGAgent(Agent):
             
             if self.is_grad_inverted:
                 action_bounds = [-30, 50]
-                action_size = 1
 
                 inverted_grads = []
                 for g,p in zip(modified_grads, params):
-                    pmax = K.constant(action_bounds[1], dtype=tf.float32)
-                    pmin = K.constant(action_bounds[0], dtype=tf.float32)
-                    prange = K.constant(action_bounds[1] - action_bounds[0], dtype = tf.float32)
-                    pdiff_max = tf.div(-p + pmax, prange)
-                    pdiff_min = tf.div(p - pmin, prange)                
-                    #is_above_upper_bound = K.greater(p, K.constant(action_bounds[1], dtype=tf.float32))
-                    #is_under_lower_bound = K.less(p, K.constant(action_bounds[0], dtype=tf.float32))
-                    is_gradient_positive = K.greater(g, K.constant(0, dtype=tf.float32))
-                    print(is_gradient_positive)
-                    #is_gradient_negative = K.less(g, K.constant(0, dtype=tf.float32))
+                    is_above_upper_bound = K.greater(p, K.constant(action_bounds[1], dtype='float32'))
+                    is_under_lower_bound = K.less(p, K.constant(action_bounds[0], dtype='float32'))
+                    is_gradient_positive = K.greater(g, K.constant(0, dtype='float32'))
+                    is_gradient_negative = K.less(g, K.constant(0, dtype='float32'))
 
-                    #invert_gradient = K.any(
-                    #    K.all(is_above_upper_bound, is_gradient_negative),
-                    #    K.all(is_under_lower_bound, is_gradient_positive)
-                    #)
-                    
-                    print(g)
-                    print(pdiff_max)
-                    print(prange)
-                    print(p)
+                    invert_gradient = K.any(
+                        K.all(is_above_upper_bound, is_gradient_negative),
+                        K.all(is_under_lower_bound, is_gradient_positive)
+                    )
 
-                    g = K.switch(is_gradient_positive, g*pdiff_max, g*pdiff_min)
-                    inverted_grads.extend(g)
+                    return K.switch(invert_gradient, -g, g)
                 modified_grads = inverted_grads[:]
                     
             if clipnorm > 0.:
