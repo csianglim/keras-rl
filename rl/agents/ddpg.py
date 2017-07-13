@@ -24,7 +24,7 @@ class DDPGAgent(Agent):
     """
     def __init__(self, nb_actions, actor, critic, critic_action_input, memory,
                  gamma=.99, batch_size=32, nb_steps_warmup_critic=1000, nb_steps_warmup_actor=1000,
-                 train_interval=1, memory_interval=1, delta_range=None, delta_clip=np.inf,
+                 train_interval=1, memory_interval=1, delta_range=None, delta_clip=np.inf, is_grad_inverted=False,
                  random_process=None, custom_model_objects={}, target_model_update=.001, **kwargs):
         if hasattr(actor.output, '__len__') and len(actor.output) > 1:
             raise ValueError('Actor "{}" has more than one output. DDPG expects an actor that has a single output.'.format(actor))
@@ -57,6 +57,7 @@ class DDPGAgent(Agent):
         self.nb_steps_warmup_critic = nb_steps_warmup_critic
         self.random_process = random_process
         self.delta_clip = delta_clip
+        self.is_grad_inverted = is_grad_inverted
         self.gamma = gamma
         self.target_model_update = target_model_update
         self.batch_size = batch_size
@@ -152,6 +153,19 @@ class DDPGAgent(Agent):
             # minimize loss. Hence the double inversion.
             assert len(grads) == len(params)
             modified_grads = [-g for g in grads]
+            if is_grad_inverted:
+                p_max = 50
+                p_min = -30
+                p_range = p_max - p_min
+                inverted_grads = []
+                for g in modified_grads:
+                    if g>0:
+                        g = (p_max - g)/(p_range)
+                    else:
+                        g = (p-p_min)/(p_range)
+                    inverted_grads.append(g)
+                modified_grads = inverted_grads[:]
+                    
             if clipnorm > 0.:
                 norm = K.sqrt(sum([K.sum(K.square(g)) for g in modified_grads]))
                 modified_grads = [optimizers.clip_norm(g, clipnorm, norm) for g in modified_grads]
