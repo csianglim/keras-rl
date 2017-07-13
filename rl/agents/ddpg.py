@@ -160,17 +160,22 @@ class DDPGAgent(Agent):
 
                 inverted_grads = []
                 for g,p in zip(modified_grads, params):
-                    is_above_upper_bound = K.greater(p, K.constant(action_bounds[1], dtype=tf.float32))
-                    is_under_lower_bound = K.less(p, K.constant(action_bounds[0], dtype=tf.float32))
+                    pmax = K.constant(action_bounds[1], dtype=tf.float32)
+                    pmin = K.constant(action_bounds[0], dtype=tf.float32)
+                    prange = K.constant([x - y for x, y in zip(action_bounds[1],action_bounds[0])], dtype = tf.float32)
+                    pdiff_max = tf.div(-p + pmax, prange)
+                    pdiff_min = tf.div(p - pmin, prange)                
+                    #is_above_upper_bound = K.greater(p, K.constant(action_bounds[1], dtype=tf.float32))
+                    #is_under_lower_bound = K.less(p, K.constant(action_bounds[0], dtype=tf.float32))
                     is_gradient_positive = K.greater(g, K.constant(0, dtype=tf.float32))
-                    is_gradient_negative = K.less(g, K.constant(0, dtype=tf.float32))
+                    #is_gradient_negative = K.less(g, K.constant(0, dtype=tf.float32))
 
-                    invert_gradient = K.any(
-                        K.all(is_above_upper_bound, is_gradient_negative),
-                        K.all(is_under_lower_bound, is_gradient_positive)
-                    )
+                    #invert_gradient = K.any(
+                    #    K.all(is_above_upper_bound, is_gradient_negative),
+                    #    K.all(is_under_lower_bound, is_gradient_positive)
+                    #)
 
-                    g = K.switch(invert_gradient, -g, g)
+                    g = K.switch(is_gradient_positive, K.dot(g,pdiff_max), K.dot(g, pdiff_min)
                     inverted_grads.extend(g)
                 modified_grads = inverted_grads[:]
                     
