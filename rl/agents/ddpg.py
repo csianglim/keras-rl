@@ -154,6 +154,8 @@ class DDPGAgent(Agent):
             # minimize loss. Hence the double inversion.
             assert len(grads) == len(params)
             modified_grads = [-g for g in grads]
+            print(modified_grads)
+            
             if self.is_grad_inverted:
                 action_bounds = [-30, 50]
                 action_size = 1
