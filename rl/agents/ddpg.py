@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import keras.backend as K
 import keras.optimizers as optimizers
+import tensorflow as tf
 
 from rl.core import Agent
 from rl.random import OrnsteinUhlenbeckProcess
@@ -154,16 +155,23 @@ class DDPGAgent(Agent):
             assert len(grads) == len(params)
             modified_grads = [-g for g in grads]
             if self.is_grad_inverted:
-                p_max = 50
-                p_min = -30
-                p_range = p_max - p_min
+                action_bounds = [-30, 50]
+                action_size = 1
+
                 inverted_grads = []
-                for g in modified_grads:
-                    if g>0:
-                        g = (p_max - g)/(p_range)
-                    else:
-                        g = (p-p_min)/(p_range)
-                    inverted_grads.append(g)
+                for g,p in zip(modified_grads, params):
+                    is_above_upper_bound = K.greater(p, K.constant(action_bounds[1], dtype=tf.float32))
+                    is_under_lower_bound = K.less(p, K.constant(action_bounds[0], dtype=tf.float32))
+                    is_gradient_positive = K.greater(g, K.constant(0, dtype=tf.float32))
+                    is_gradient_negative = K.less(g, K.constant(0, dtype=tf.float32))
+
+                    invert_gradient = K.any(
+                        K.all(is_above_upper_bound, is_gradient_negative),
+                        K.all(is_under_lower_bound, is_gradient_positive)
+                    )
+
+                    g = K.switch(invert_gradient, -g, g)
+                    inverted_grads.extend(g)
                 modified_grads = inverted_grads[:]
                     
             if clipnorm > 0.:
