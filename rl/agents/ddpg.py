@@ -162,7 +162,7 @@ class DDPGAgent(Agent):
                 for g,p in zip(modified_grads, params):
                     pmax = K.constant(action_bounds[1], dtype=tf.float32)
                     pmin = K.constant(action_bounds[0], dtype=tf.float32)
-                    prange = K.constant([x - y for x, y in zip(action_bounds[1],action_bounds[0])], dtype = tf.float32)
+                    prange = K.constant(action_bounds[1] - action_bounds[0], dtype = tf.float32)
                     pdiff_max = tf.div(-p + pmax, prange)
                     pdiff_min = tf.div(p - pmin, prange)                
                     #is_above_upper_bound = K.greater(p, K.constant(action_bounds[1], dtype=tf.float32))
