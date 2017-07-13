@@ -165,6 +165,11 @@ class DDPGAgent(Agent):
                     is_under_lower_bound = K.less(p, K.constant(action_bounds[0], dtype='float32'))
                     is_gradient_positive = K.greater(g, K.constant(0, dtype='float32'))
                     is_gradient_negative = K.less(g, K.constant(0, dtype='float32'))
+                    
+                    print(is_above_upper_bound)
+                    print(is_under_lower_bound)
+                    print(is_gradient_positive)
+                    print(is_gradient_negative)
 
                     invert_gradient = K.any(
                         K.all(is_above_upper_bound, is_gradient_negative),
